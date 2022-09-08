@@ -1,0 +1,37 @@
+---
+# tasks file for go
+
+- name: '{{ playbook_name }} - Download Golang archive'
+  ansible.builtin.get_url:
+    url: "{{ golang_url }}/{{ golang_archive }}"
+    dest: /tmp/
+
+
+- name: '{{ playbook_name }} - remove old version Golang'
+  ansible.builtin.file:
+    path: "/usr/local/go"
+    state: absent
+    # recurse: True
+
+- name: '{{ playbook_name }} - Create directory Golang'
+  ansible.builtin.file:
+    path: "{{ golang_install_dir }}"
+    state: directory
+    recurse: True
+
+- name: '{{ playbook_name }} - extract Golang archive'
+  ansible.builtin.unarchive:
+    src: "/tmp/{{ golang_archive }}"
+    dest: "{{ golang_install_dir }}"
+    extra_opts: [--strip-components=1]
+
+- name: '{{ playbook_name }} - Copy profile.d script'
+  ansible.builtin.template:
+    src: golang.sh.j2
+    dest: /etc/profile.d/golang.sh
+    mode: "0755"
+
+- name: '{{ playbook_name }} - remove Golang archive'
+  ansible.builtin.file:
+    path: "/tmp/{{ golang_archive }}"
+    state: absent
